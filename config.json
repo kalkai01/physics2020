@@ -1,0 +1,53 @@
+{
+  "type": "network",
+  "version": "1.0",
+  "data": "data.json",
+  "logo": {
+    "file": "",
+    "link": "",
+    "text": "Irene Kalkanis"
+  },
+  "text": {
+    "more": "The edges represent narrower terms, so each term is linked to it\u0027s narrower and broader terms. \nThe size of the noad represents the number of connections, so high level concepts are prominent. \nThe colours are determined by modularity analysis which groups nodes into clusters based on the number of shared connections.",
+    "intro": "This is a visualisation of the IOPP physics thesaurus. ",
+    "title": "Physics thesaurus starmap"
+  },
+  "legend": {
+    "edgeLabel": "Narrower terms",
+    "colorLabel": "Clusters",
+    "nodeLabel": "Physics terms"
+  },
+  "features": {
+    "search": true,
+    "groupSelectorAttribute": "color",
+    "hoverBehavior": "dim"
+  },
+  "informationPanel": {
+    "groupByEdgeDirection": false,
+    "imageAttribute": false
+  },
+  "sigma": {
+    "drawingProperties": {
+      "defaultEdgeType": "curve",
+      "defaultHoverLabelBGColor": "#002147",
+      "defaultLabelBGColor": "#ddd",
+      "activeFontStyle": "bold",
+      "defaultLabelColor": "#000",
+      "labelThreshold": 10,
+      "defaultLabelHoverColor": "#fff",
+      "fontStyle": "bold",
+      "hoverFontStyle": "bold",
+      "defaultLabelSize": 14
+    },
+    "graphProperties": {
+      "maxEdgeSize": 0.5,
+      "minEdgeSize": 0.2,
+      "minNodeSize": 1,
+      "maxNodeSize": 7
+    },
+    "mouseProperties": {
+      "maxRatio": 20,
+      "minRatio": 0.75
+    }
+  }
+}
