@@ -6,9 +6,25 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,user-scalable=no" />
         <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <style type="text/css">
+            body {
+                font-family: Tahoma;
+                font-size: 12px;
+            }
+
+            #divTooltip {
+                position: fixed;
+                border-radius: 4px;
+                background: #ccc;
+                padding: 4px 8px;
+                color: #00f;
+                display: none;
+            }
+        </style>
     </head>
     <body>
         <div id="divContainer" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;"></div>
+        <div id="divTooltip"><span></span></div>
 
         <script type="text/javascript" src="js/jquery/jquery.min.js"></script>
 
@@ -21,6 +37,9 @@
                 var container = document.getElementById("divContainer");
                 var $container = $(container);
 
+                var $tooltip = $("#divTooltip");
+                var $tooltipText = $tooltip.find("span");
+
                 var width = $container.width(), height = $container.height();
 
                 $.getJSON("data.json", function (data) {
@@ -32,69 +51,89 @@
                     var renderer = new THREE.WebGLRenderer({ antialias: false });
                     renderer.setPixelRatio(window.devicePixelRatio);
                     renderer.setSize(width, height);
+                    renderer.sortObjects = false;
 
                     container.appendChild(renderer.domElement);
                     
                     var controls = new THREE.OrbitControls(camera, renderer.domElement);
                     controls.enableZoom = true;
-
-                    var nodes = [], nodeGroups = [], meshes = [];
-                    var noMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
                     
-                    var nodeGeo = new THREE.SphereBufferGeometry(10, 12, 8);
+                    var nodes = [];
+                    var nodeGeo = new THREE.SphereBufferGeometry(1, 12, 8);
+                    var nodeGroup = new THREE.Object3D();
 
                     $.each(data.nodes, function (i, n) {
-                        //if (i > 100) return;
+                        //if (i > 200) return;
 
-                        n.z = Math.sqrt(75000 - (n.x * n.x + n.y * n.y)) * (n.id % 2 == 0 ? 1 : -1);
-                        n.size = Math.floor(n.size * 10);
+                        n.z = Math.sqrt(Math.abs(75000 - (n.x * n.x + n.y * n.y))) * (n.id % 2 == 0 ? 1 : -1);
+                        //n.size = Math.floor(n.size * 10);
                         
                         nodes[n.id] = n;
-
-                        var nodeGroup = nodeGroups[n.attributes["Modularity Class"]];
                         
-                        if (nodeGroup == null) {
-                            nodeGroup = { material: new THREE.MeshBasicMaterial({ color: n.color }), geo: new THREE.Geometry() };
-                            nodeGroups[n.attributes["Modularity Class"]] = nodeGroup;
-                        }
-
-                        var mesh = meshes[n.size];
+                        var mesh = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({ color: n.color }));
+                        mesh.matrixAutoUpdate = false;
                         
-                        if (mesh == null) {
-                            mesh = new THREE.Mesh(new THREE.SphereGeometry(n.size / 10, 12, 8), noMaterial);
-                            mesh.matrixAutoUpdate = false;
-                            meshes[n.size] = mesh;
-                        }
-
                         mesh.position.x = n.x;
                         mesh.position.y = n.y;
                         mesh.position.z = n.z;
 
+                        mesh.scale.x = n.size;
+                        mesh.scale.y = n.size;
+                        mesh.scale.z = n.size;
+
+                        mesh.name = n.label;
+
                         mesh.updateMatrix();
-                        nodeGroup.geo.merge(mesh.geometry, mesh.matrix);
-                    });
-                    
-                    $.each(nodeGroups, function (i, g) {
-                        if (g == null) return;
-                        scene.add(new THREE.Mesh(g.geo, g.material));
+                        nodeGroup.add(mesh);
                     });
 
-                    var lineMaterial = new THREE.LineBasicMaterial({ color: 0x555555 });
-                    var lineGeo = new THREE.Geometry();
+                    scene.add(nodeGroup);
+                    
+                    var lineMaterial = new THREE.LineBasicMaterial({ color: 0xbbbbbb, opacity: 0.2, transparent: true });
+                    var lineGeo = new THREE.BufferGeometry();
+                    var positions = new Float32Array(data.edges.length * 6), indices = [];
 
                     $.each(data.edges, function (i, e) {
                         var source = nodes[e.source], target = nodes[e.target];
                         if (source == null || target == null) return;
 
-                        lineGeo.vertices.push(new THREE.Vector3(source.x, source.y, source.z));
-                        lineGeo.vertices.push(new THREE.Vector3(target.x, target.y, target.z));
+                        var rootIndex = i * 3;
+                        
+                        positions[rootIndex] = source.x;
+                        positions[rootIndex + 1] = source.y;
+                        positions[rootIndex + 2] = source.z;
+                        
+                        positions[rootIndex + 3] = target.x;
+                        positions[rootIndex + 4] = target.y;
+                        positions[rootIndex + 5] = target.z;
+
+                        indices.push(i);
+                        indices.push(i + 1);
                     });
+
+                    lineGeo.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    lineGeo.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
                     
-                    var line = new THREE.Line(lineGeo, lineMaterial);
+                    var line = new THREE.LineSegments(lineGeo, lineMaterial);
                     scene.add(line);
+                    
+                    var raycaster = new THREE.Raycaster();
+                    var mouse = new THREE.Vector2(), clientPos = new THREE.Vector2(), intersected;
                     
                     var stats = new Stats();
                     container.appendChild(stats.dom);
+                    
+                    container.addEventListener('mousemove', on3DMouseMove, false);
+                    
+                    function on3DMouseMove(event) {
+                        event.preventDefault();
+
+                        clientPos.x = event.clientX;
+                        clientPos.y = event.clientY;
+
+                        mouse.x = (event.clientX / width) * 2 - 1;
+                        mouse.y = -(event.clientY / height) * 2 + 1;
+                    }
 
                     function animate() {
                         requestAnimationFrame(animate);
@@ -104,6 +143,33 @@
                     }
 
                     function render() {
+                        raycaster.setFromCamera(mouse, camera);
+                        
+                        var intersects = raycaster.intersectObjects(nodeGroup.children);
+                        
+                        if (intersects.length > 0) {
+                            if (intersected != intersects[0].object) {
+                                if (intersected) {
+                                    intersected.material.color.setHex(intersected.originColor);
+                                } else {
+                                    $tooltip.show();
+                                }
+
+                                intersected = intersects[0].object;
+                                intersected.originColor = intersected.material.color.getHex();
+                                intersected.material.color.setHex(0xffffff);
+
+                                $tooltip.css("top", clientPos.y - 5);
+                                $tooltip.css("left", clientPos.x + 20);
+                                $tooltipText.html(intersected.name);
+                            }
+                        } else {
+                            if (intersected) intersected.material.color.setHex(intersected.originColor);
+                            intersected = null;
+                            
+                            //$tooltip.hide();
+                        }
+                        
                         renderer.render(scene, camera);
                     }
 
