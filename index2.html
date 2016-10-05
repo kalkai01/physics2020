@@ -15,10 +15,10 @@
             #divTooltip {
                 position: fixed;
                 border-radius: 4px;
-                background: #ccc;
+                background: #ddd;
                 padding: 4px 8px;
-                color: #00f;
                 display: none;
+                font-weight: bold;
             }
         </style>
     </head>
@@ -161,13 +161,15 @@
 
                                 $tooltip.css("top", clientPos.y - 5);
                                 $tooltip.css("left", clientPos.x + 20);
+
+                                $tooltipText.css("color", "#" + (0x1000000 + intersected.originColor).toString(16).slice(1));
                                 $tooltipText.html(intersected.name);
                             }
                         } else {
                             if (intersected) intersected.material.color.setHex(intersected.originColor);
                             intersected = null;
                             
-                            //$tooltip.hide();
+                            $tooltip.hide();
                         }
                         
                         renderer.render(scene, camera);
