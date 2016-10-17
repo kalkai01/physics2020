@@ -1,0 +1,227 @@
+﻿body {
+    font-family: Tahoma;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+}
+
+#divContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#divTooltip {
+    position: fixed;
+    border-radius: 4px;
+    background: #ddd;
+    padding: 4px 8px;
+    display: none;
+    font-weight: bold;
+}
+
+#leftFooter {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+}
+
+#divSearch {
+    position: fixed;
+    top: 40px;
+    left: 20px;
+    width: 230px;
+    padding: 20px;
+    background-color: #fff;
+    opacity: 0.75;
+}
+
+    #divSearch h2 {
+        font-size: 15px;
+        padding: 0;
+        margin: 20px 0 10px;
+    }
+
+    #divSearch h4 {
+        font-size: 13px;
+        padding: 0;
+        margin: 20px 0 5px;
+    }
+
+    #divSearch .about {
+        font-weight: bold;
+        text-decoration: none;
+        color: #000;
+        position: relative;
+        padding-left: 20px;
+    }
+
+        #divSearch .about img {
+            position: absolute;
+            left: 6px;
+            top: 0;
+        }
+
+        #divSearch .about:hover {
+            color: #777;
+        }
+
+    #divSearch .legend {
+        margin: 0 0 20px 0;
+        padding: 0;
+    }
+
+        #divSearch .legend > li {
+            list-style: none;
+            position: relative;
+            padding-left: 28px;
+            margin-top: 8px;
+        }
+
+            #divSearch .legend > li span {
+                background-repeat: no-repeat;
+                width: 20px;
+                height: 20px;
+                position: absolute;
+                left: 5px;
+            }
+
+            #divSearch .legend > li:nth-child(1) span {
+                background-image: url('../images/sprite.png');
+                background-position: -11px -119px;
+            }
+
+            #divSearch .legend > li:nth-child(2) span {
+                background-image: url('../images/sprite.png');
+                background-position: -51px -122px;
+            }
+
+            #divSearch .legend > li:nth-child(3) span {
+                background-image: url('../images/rainbow.png');
+            }
+
+    #divSearch .search-query {
+        position: relative;
+    }
+
+        #divSearch .search-query input[type="text"] {
+            width: 210px;
+        }
+
+        #divSearch .search-query > span {
+            position: absolute;
+            background-image: url('../images/sprite.png');
+            background-position: -128px -10px;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+    #divSearch .results {
+        max-height: 200px;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+        #divSearch .results > span {
+            font-style: italic;
+        }
+
+        #divSearch .results > ul {
+            margin: 0;
+            padding: 0;
+        }
+
+            #divSearch .results > ul > li {
+                list-style: none;
+            }
+
+#divDetails {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 230px;
+    height: 100%;
+    padding: 20px;
+    background-color: #fff;
+    -webkit-transition: right 0.3s; /* Safari */
+    transition: right 0.3s;
+}
+
+    #divDetails .panel-content {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    #divDetails .panel-close {
+        position: absolute;
+        left: -13px;
+        top: 5px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 2px solid #555;
+        cursor: pointer;
+    }
+
+        #divDetails .panel-close span {
+            background-image: url('../images/sprite.png');
+            background-position: -236px -209px;
+            width: 22px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        #divDetails .panel-close-link {
+            cursor: pointer;
+            text-decoration: none;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            line-height: 32px;
+        }
+
+#divAbout {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    display: none;
+}
+
+    #divAbout .dialog {
+        background-color: #fff;
+        position: absolute;
+        left: 25%;
+        width: 50%;
+        top: 50%;
+        margin-top: -80px;
+        border-radius: 5px;
+    }
+
+    #divAbout .dialog-content {
+        padding: 10px 20px;
+        line-height: 20px;
+        font-weight: bold;
+    }
+
+    #divAbout .dialog-close {
+        position: absolute;
+        right: -13px;
+        top: -12px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 2px solid #555;
+        cursor: pointer;
+    }
+
+        #divAbout .dialog-close span {
+            background-image: url('../images/sprite.png');
+            background-position: -236px -209px;
+            width: 22px;
+            height: 20px;
+            display: inline-block;
+        }
