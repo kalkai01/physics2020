@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>OII Network Visualisation Example</title>
+    <title>IOPP-network</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,user-scalable=no" />
@@ -12,12 +12,12 @@
     <div id="divContainer"></div>
     <div id="divTooltip"><span></span></div>
 
-    <div id="leftFooter">
+    <!--<div id="leftFooter">
         <a href="http://www.oii.ox.ac.uk" title="Oxford Internet Institute">
             <img src="images/oii_text.png" /></a>
         <a href="http://jisc.ac.uk" title="JISC">
             <img src="images/jisc-logo-small.png" /></a>
-    </div>
+    </div>-->
 
     <div id="divSearch">
         <h2>Physics thesaurus starmap</h2>
@@ -39,13 +39,14 @@
             <div class="results"></div>
         </div>
         <h4>Group selector</h4>
+        <div class="groups"></div>
     </div>
     
     <div id="divDetails">
         <div class="panel-content">
         </div>
-        <div class="panel-close"><span></span></div>
         <a class="panel-close-link"><b>Return to the full network</b></a>
+        <div class="panel-close"><span></span></div>
     </div>
 
     <div id="divAbout">
@@ -53,7 +54,7 @@
             <div class="dialog-content">
                 <p>
                     The edges represent narrower terms, so each term is linked to it's narrower and broader terms. 
-                    The size of the noad represents the number of connections, so high level concepts are prominent. 
+                    The size of the node represents the number of connections, so high level concepts are prominent. 
                     The colours are determined by modularity analysis which groups nodes into clusters based on the number of shared connections.
                 </p>
             </div>

@@ -9,10 +9,10 @@ var $details = $("#divDetails");
 var width, height;
 
 var rawNodes;
-var nodes = [];
+var nodes = [], groups = [];
 var graph;
 
-var coolRender = false;
+var coolRender = true;
 
 function init3D(data) {
     var scene = new THREE.Scene();
@@ -38,13 +38,14 @@ function init3D(data) {
     var lineMaterial = new THREE.LineBasicMaterial({ color: 0xbbbbbb, opacity: 0.2, transparent: true });
     var lineGeo = new THREE.BufferGeometry();
 
-    var processing = false;
+    var disableRendering = false;
 
     var instance = {
-        showNode: function (id) {
-            processing = true;
+        showNode: function (id, group) {
+            disableRendering = true;
+            var html;
 
-            if (id == null) {
+            if (id == null && group == null) {
                 $.each(nodeGroup.children, function (i, n) {
                     n.visible = true;
                 });
@@ -54,7 +55,7 @@ function init3D(data) {
                 // hide details
                 $details.css("right", "-300px");
                 
-            } else {
+            } else if (id != null) {
                 var currentNode = nodes[id];
 
                 $.each(nodeGroup.children, function(i, n) {
@@ -62,10 +63,10 @@ function init3D(data) {
                 });
 
                 lineGeo.setIndex(new THREE.BufferAttribute(new Uint16Array(currentNode.indices), 1));
-                
+
                 // show details
-                var html = "<h2>" + currentNode.label + "</h2><hr/>";
-                
+                html = "<div><h2>" + currentNode.label + "</h2><hr/>";
+
                 html += "<p><b>Modularity Class</b>: " + currentNode.attributes["Modularity Class"] + "</p>";
                 html += "<p><b>Eccentricity</b>: " + currentNode.attributes["Eccentricity"] + "</p>";
                 html += "<p><b>Closeness Centrality</b>: " + currentNode.attributes["Closeness Centrality"] + "</p>";
@@ -73,20 +74,45 @@ function init3D(data) {
                 html += "<p><b>Harmonic Closeness Centrality</b>: " + currentNode.attributes["Harmonic Closeness Centrality"] + "</p>";
 
                 html += "<p class='links'><b>Connections</b>:<br/>";
-                
-                $.each(currentNode.links, function (i2, l) {
+
+                $.each(currentNode.links, function(i2, l) {
                     var linkedNode = nodes[l];
                     html += "<a href='javascript:void(0);' data-id='" + linkedNode.id + "'>" + linkedNode.label + "</a><br/>";
                 });
 
-                html += "</p>";
+                html += "</p></div>";
+
+                $details.find(".panel-content").html(html);
+
+                $details.css("right", "0");
+                
+            } else {
+                var currentGroup = groups[group];
+
+                $.each(nodeGroup.children, function(i, n) {
+                    n.visible = (currentGroup.nodes.indexOf(n.node_id) >= 0);
+                });
+
+                lineGeo.setIndex(new THREE.BufferAttribute(new Uint16Array(currentGroup.indices), 1));
+                
+                // show details
+                html = "<div><h2>Group " + currentGroup.id + "</h2><hr/>";
+
+                html += "<p class='links'><b>" + currentGroup.nodes.length + " members</b>:<br/><br/>";
+
+                $.each(currentGroup.nodes, function (i2, l) {
+                    var linkedNode = nodes[l];
+                    html += "<a href='javascript:void(0);' data-id='" + linkedNode.id + "'>" + linkedNode.label + "</a><br/>";
+                });
+
+                html += "</p></div>";
 
                 $details.find(".panel-content").html(html);
 
                 $details.css("right", "0");
             }
 
-            processing = false;
+            disableRendering = false;
             //render();
         }
     };
@@ -99,15 +125,15 @@ function init3D(data) {
         light2.position.set(0, 1, 0);
         scene.add(light2);
     }
-    
-    $.each(data.nodes, function (i, n) {
+
+    $.each(data.nodes, function(i, n) {
         //if (i > 200) return;
 
         n.lcLabel = n.label.toLowerCase();
         n.indices = [];
         n.links = [];
-        
-        n.z = Math.sqrt(Math.abs(80000 - (n.x * n.x + n.y * n.y))) * (n.id % 2 == 0 ? 1 : -1);
+
+        n.z = Math.sqrt(Math.abs(70000 - (n.x * n.x + n.y * n.y))) * (n.id % 2 == 0 ? 1 : -1);
 
         if (n.size > 2 && n.size < 19) {
             var ratio = 1 - n.size / 20;
@@ -117,7 +143,22 @@ function init3D(data) {
         }
 
         nodes[n.id] = n;
+        
+        var group = groups[n.attributes["Modularity Class"]];
 
+        if (group == null) {
+            group = {
+                id: n.attributes["Modularity Class"], color: n.color, nodes: [n.id], indices: [],
+                //material: coolRender ? new THREE.MeshLambertMaterial({ color: n.color }) : new THREE.MeshBasicMaterial({ color: n.color })
+            };
+            
+            groups[group.id] = group;
+            
+        } else {
+            group.nodes.push(n.id);
+        }
+
+        //var mesh = new THREE.Mesh(nodeGeo, group.material);
         var mesh = new THREE.Mesh(nodeGeo, coolRender ? new THREE.MeshLambertMaterial({ color: n.color }) : new THREE.MeshBasicMaterial({ color: n.color }));
         mesh.matrixAutoUpdate = false;
 
@@ -135,6 +176,17 @@ function init3D(data) {
         mesh.updateMatrix();
         nodeGroup.add(mesh);
     });
+
+    var groupHtml = "<ul>";
+    
+    $.each(groups, function(i, g) {
+        if (g == null) return;
+        groupHtml += "<li><a href='javascript:void(0);' data-id='" + g.id + "'><span style='background-color: " + g.color + "'></span> Group " + g.id + " (" + g.nodes.length + " members)</a></li>";
+    });
+    
+    groupHtml += "</ul>";
+    
+    $("#divSearch .groups").html(groupHtml);
 
     scene.add(nodeGroup);
 
@@ -162,6 +214,12 @@ function init3D(data) {
         source.indices.push(i * 2 + 1);
         target.indices.push(i * 2);
         target.indices.push(i * 2 + 1);
+        
+        if (source.attributes["Modularity Class"] == target.attributes["Modularity Class"]) {
+            var group = groups[source.attributes["Modularity Class"]];
+            group.indices.push(i * 2);
+            group.indices.push(i * 2 + 1);
+        }
     });
 
     lineGeo.addAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -199,13 +257,13 @@ function init3D(data) {
 
     function animate() {
         requestAnimationFrame(animate);
-        controls.update();
+        //controls.update();
         render();
         stats.update();
     }
 
     function render() {
-        if (processing) return;
+        if (disableRendering) return;
 
         raycaster.setFromCamera(mouse, camera);
 
@@ -336,6 +394,10 @@ $(document).ready(function () {
     
     $("#divSearch .results").on("click", "a", function () {
         graph.showNode($(this).attr("data-id"));
+    });
+    
+    $("#divSearch .groups").on("click", "a", function () {
+        graph.showNode(null, $(this).attr("data-id"));
     });
     
     $("#divDetails").on("click", ".links a", function () {

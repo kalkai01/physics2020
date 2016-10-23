@@ -16,6 +16,8 @@
 
 #divTooltip {
     position: fixed;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
     border-radius: 4px;
     background: #ddd;
     padding: 4px 8px;
@@ -42,13 +44,13 @@
     #divSearch h2 {
         font-size: 15px;
         padding: 0;
-        margin: 20px 0 10px;
+        margin: 10px 0 10px;
     }
 
     #divSearch h4 {
         font-size: 13px;
         padding: 0;
-        margin: 20px 0 5px;
+        margin: 15px 0 5px;
     }
 
     #divSearch .about {
@@ -122,7 +124,7 @@
         }
 
     #divSearch .results {
-        max-height: 200px;
+        max-height: 160px;
         overflow-x: hidden;
         overflow-y: auto;
     }
@@ -140,27 +142,67 @@
                 list-style: none;
             }
 
+    #divSearch .groups {
+        max-height: 160px;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+        #divSearch .groups > ul {
+            margin: 0;
+            padding: 0;
+        }
+
+            #divSearch .groups li {
+                list-style: none;
+            }
+
+            #divSearch .groups li > a {
+                line-height: 20px;
+                text-decoration: none;
+                position: relative;
+                padding-left: 36px;
+            }
+
+            #divSearch .groups li > a > span {
+                position: absolute;
+                display: inline-block;
+                width: 30px;
+                height: 16px;
+                left: 0;
+                top: -2px;
+            }
+
 #divDetails {
     position: fixed;
     top: 0;
     right: -300px;
     width: 230px;
     height: 100%;
-    padding: 20px;
     background-color: #fff;
     -webkit-transition: right 0.3s; /* Safari */
+    -moz-transition: right 0.3s;
+    -o-transition: right 0.3s;
     transition: right 0.3s;
 }
 
     #divDetails .panel-content {
         width: 100%;
-        margin-top: 20px;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
+
+        #divDetails .panel-content > div {
+            margin: 40px 18px 18px 18px;
+        }
 
     #divDetails .panel-close {
         position: absolute;
         left: -13px;
         top: 5px;
+        -moz-border-radius: 50%;
+        -webkit-border-radius: 50%;
         border-radius: 50%;
         background-color: #fff;
         border: 2px solid #555;
@@ -175,14 +217,16 @@
             display: inline-block;
         }
 
-        #divDetails .panel-close-link {
-            cursor: pointer;
-            text-decoration: none;
-            position: absolute;
-            top: 0;
-            width: 100%;
-            line-height: 32px;
-        }
+    #divDetails .panel-close-link {
+        cursor: pointer;
+        text-decoration: none;
+        position: absolute;
+        top: 0;
+        line-height: 36px;
+        padding-left: 18px;
+        width: 210px;
+        background-color: #fff;
+    }
 
 #divAbout {
     position: fixed;
@@ -199,6 +243,8 @@
         width: 50%;
         top: 50%;
         margin-top: -80px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
         border-radius: 5px;
     }
 
@@ -212,6 +258,8 @@
         position: absolute;
         right: -13px;
         top: -12px;
+        -moz-border-radius: 50%;
+        -webkit-border-radius: 50%;
         border-radius: 50%;
         background-color: #fff;
         border: 2px solid #555;
