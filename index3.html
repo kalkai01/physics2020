@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Physics Funding</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" type="text/css" href="css/index3.css" />
+</head>
+<body>
+    <div id="divContainer"></div>
+
+    <div id="divDisplayModes">
+        <a class="btn" data-id="pclass">Physics class</a>
+        <a class="btn" data-id="class">Classification</a>
+        <a class="btn" data-id="org">Organization</a>
+        <a class="btn" data-id="scheme">Scheme</a>
+        <a class="btn" data-id="trend">Trending</a>
+        <div>
+            <div style="margin-top: 30px; margin-bottom: 5px;">Number of records (<span id="spanRecords"></span>):</div>
+            <img src="images/color-range.png" />
+        </div>
+    </div>
+    
+    <div id="divFilters">
+        <h3>Data filters</h3>
+        <label>Research Council Owner <a>[all]</a></label>
+        <ul data-id="owner"></ul>
+        <label>Physics class <a>[all]</a></label>
+        <ul data-id="pclass"></ul>
+        <label>Organization type <a>[all]</a></label>
+        <ul data-id="org_type"></ul>
+        <label>Status <a>[all]</a></label>
+        <ul data-id="status"></ul>
+        <label>Grant type <a>[all]</a></label>
+        <ul data-id="grant"></ul>
+    </div>
+
+    <script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="js/d3.v4.min.js"></script>
+
+    <script type="text/javascript" src="js/index3.js"></script>
+</body>
+</html>

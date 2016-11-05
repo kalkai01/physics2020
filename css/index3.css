@@ -1,0 +1,162 @@
+﻿body {
+    font-family: Tahoma;
+    font-size: 13px;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+#divContainer {
+    position: fixed;
+    top: 40px;
+    bottom: 0;
+    left: 100px;
+    right: 340px;
+}
+
+    #divContainer .node {
+        stroke-width: 1;
+        stroke: #fff;
+    }
+
+        #divContainer .node:hover {
+            stroke-width: 1;
+            stroke: #f00;
+        }
+
+        #divContainer .node text {
+            fill: #000;
+            stroke-width: 0;
+            font-size: 10px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+    #divContainer .tooltip {
+        position: absolute;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        opacity: 0.9;
+        padding: 5px 10px;
+        font-size: 11px;
+        line-height: 16px;
+        pointer-events: none;
+    }
+
+        #divContainer .tooltip label {
+            font-weight: bold;
+        }
+
+    #divContainer .line path {
+        fill: none;
+        stroke-width: 1.5px;
+    }
+
+    #divContainer .vertical {
+        position: absolute;
+        z-index: 20;
+        background-color: #f00;
+        display: none;
+        pointer-events: none;
+        width: 1px;
+    }
+
+#divDisplayModes {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+}
+
+#divFilters {
+    position: fixed;
+    width: 300px;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #f9f9f9;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+    #divFilters h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    #divFilters label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+
+        #divFilters label > a {
+            cursor: pointer;
+            color: #00f;
+            font-weight: normal;
+        }
+
+    #divFilters ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+        #divFilters ul > li {
+            padding: 4px 5px 4px 10px;
+            cursor: pointer;
+            color: #999;
+        }
+
+            #divFilters ul > li.active {
+                background-color: #eee;
+                color: #333;
+            }
+
+            #divFilters ul > li:hover {
+                background-color: #ddd;
+            }
+
+            #divFilters ul > li a {
+                display: none;
+                color: #00f;
+                float: right;
+            }
+
+            #divFilters ul > li:hover a {
+                display: inline;
+            }
+
+.btn {
+    padding: 5px 10px;
+    background: #4479BA;
+    color: #FFF;
+    cursor: pointer;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    border: solid 1px #20538D;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    -webkit-transition-duration: 0.2s;
+    -moz-transition-duration: 0.2s;
+    -o-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+}
+
+    .btn:hover, .btn:focus {
+        background: #356094;
+        border: solid 1px #2A4E77;
+        text-decoration: none;
+    }
+
+    .btn:active, .btn.active {
+        -webkit-box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+        -moz-box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+        box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+        background: #2E5481;
+        border: solid 1px #203E5F;
+    }
