@@ -12,29 +12,36 @@
     <div id="divContainer"></div>
 
     <div id="divDisplayModes">
-        <a class="btn" data-id="pclass">Physics class</a>
+        <a class="btn" data-id="pclass">Physics Classification</a>
         <a class="btn" data-id="class">Classification</a>
-        <a class="btn" data-id="org">Organization</a>
-        <a class="btn" data-id="scheme">Scheme</a>
+        <a class="btn" data-id="org">Organisation</a>
         <a class="btn" data-id="trend">Trending</a>
         <div>
-            <div style="margin-top: 30px; margin-bottom: 5px;">Number of records (<span id="spanRecords"></span>):</div>
+            <div style="margin-top: 30px; margin-bottom: 5px;">Number of Grants (<span id="spanRecords"></span>):</div>
             <img src="images/color-range.png" />
         </div>
     </div>
     
     <div id="divFilters">
         <h3>Data filters</h3>
-        <label>Research Council Owner <a>[all]</a></label>
+        <label>Funding Body <a>[all]</a></label>
         <ul data-id="owner"></ul>
-        <label>Physics class <a>[all]</a></label>
+        <label>Physics Classification <a>[all]</a></label>
         <ul data-id="pclass"></ul>
-        <label>Organization type <a>[all]</a></label>
+        <label>Organisation type <a>[all]</a></label>
         <ul data-id="org_type"></ul>
         <label>Status <a>[all]</a></label>
         <ul data-id="status"></ul>
         <label>Grant type <a>[all]</a></label>
         <ul data-id="grant"></ul>
+    </div>
+    
+    <div id="divDialog">
+        <div class="dialog-content">
+            <h3 class="title"></h3>
+            <div class="body"></div>
+            <div class="dialog-close"><span></span></div>
+        </div>
     </div>
 
     <script type="text/javascript" src="js/jquery/jquery.min.js"></script>

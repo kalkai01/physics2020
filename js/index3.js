@@ -3,8 +3,10 @@ var $container = $("#divContainer");
 
 var data, chartData;
 
-var dictClass = [], dictOrg = [], dictOrg_type = [], dictPclass = [], dictStatus = [], dictOwner = [], dictGrant = [], dictScheme = [];
+var dictClass = [], dictOrg = [], dictOrg_type = [], dictPclass = [], dictStatus = [], dictOwner = [], dictGrant = [];
 var startFrom = 1000000, startTo = 0, endFrom = 1000000, endTo = 0;
+
+var pclassColor = d3.scaleOrdinal(d3.schemeCategory20);
 
 function scanValue() {
     
@@ -18,7 +20,6 @@ function scanValue() {
         if (dictStatus.indexOf(d.status) < 0) dictStatus.push(d.status);
         if (dictOwner.indexOf(d.owner) < 0) dictOwner.push(d.owner);
         if (dictGrant.indexOf(d.grant) < 0) dictGrant.push(d.grant);
-        if (dictScheme.indexOf(d.scheme) < 0) dictScheme.push(d.scheme);
 
         d.startY = timeParse(d.start).getFullYear();
         d.endY = timeParse(d.end).getFullYear();
@@ -37,7 +38,6 @@ function scanValue() {
     dictStatus.sort();
     dictOwner.sort();
     dictGrant.sort();
-    dictScheme.sort();
 
     //var dict = dictOrg;
     
@@ -56,13 +56,17 @@ function scanValue() {
     initFilter(dictOrg_type, $("#divFilters ul[data-id='org_type']"));
     initFilter(dictStatus, $("#divFilters ul[data-id='status']"));
     initFilter(dictGrant, $("#divFilters ul[data-id='grant']"));
+
+    $("#divFilters ul[data-id='pclass'] > li").each(function() {
+        d3.select(this).append("span").attr("class", "color").style("background-color", pclassColor(d3.select(this).select("span").text()));
+    });
 }
 
 function initFilter(dict, ul) {
     var html = "";
 
     dict.forEach(function(d) {
-        html += "<li class='active'><span>" + (d == null || d == "" ? "[empty]" : d) + "</span><a>[only]</a></li>";
+        html += "<li class='active'><span>" + (d == null || d == "" ? "[empty]" : d) + "</span><a>[remove]</a></li>";
     });
 
     ul.html(html);
@@ -70,10 +74,12 @@ function initFilter(dict, ul) {
 
 function refreshChart() {
     container.selectAll("*").remove();
+    $("#divFilters ul[data-id='pclass'] .color").hide();
     
     var mode = $("#divDisplayModes .btn.active").attr("data-id");
     
     if (mode == "trend") {
+        $("#divFilters ul[data-id='pclass'] .color").show();
         drawLines();
         return;
     }
@@ -81,7 +87,7 @@ function refreshChart() {
     var items = [], valueDict = [], recordDict = [];
     var recordMin = 1000000, recordMax = 0;
 
-    var itemDict = mode == "pclass" ? dictPclass : mode == "class" ? dictClass : mode == "org" ? dictOrg : dictScheme;
+    var itemDict = mode == "pclass" ? dictPclass : mode == "class" ? dictClass : dictOrg;
 
     itemDict.forEach(function (d) {
         valueDict[d] = 0;
@@ -100,16 +106,10 @@ function refreshChart() {
             recordDict[d.class]++;
         });
         
-    } else if (mode == "org") {
+    } else {
         chartData.forEach(function (d) {
             valueDict[d.org] += parseFloat(d.total);
             recordDict[d.org]++;
-        });
-        
-    } else {
-        chartData.forEach(function (d) {
-            valueDict[d.scheme] += parseFloat(d.total);
-            recordDict[d.scheme]++;
         });
     }
 
@@ -142,8 +142,9 @@ function refreshChart() {
         .data(pack(root).leaves()).enter().append("g").attr("class", "node").attr("opacity", 0)
         .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-    node.append("circle")
-        .attr("id", function(d) { return "node" + d.data.id; })
+    node.attr("data-id", function (d) { return d.data.name; })
+        .append("circle")
+        .attr("id", function (d) { return "node" + d.data.id; })
         .attr("r", function(d) { return d.r; })
         .style("fill", function (d) { return color(Math.sqrt(d.data.records)); });
 
@@ -152,13 +153,18 @@ function refreshChart() {
         .append("use")
         .attr("xlink:href", function(d) { return "#node" + d.data.id; });
 
-    node.append("text")
+    node.filter(function (d) { return d.r >= 40; })
+        .append("text")
         .attr("clip-path", function(d) { return "url(#clip" + d.data.id + ")"; })
         .selectAll("tspan")
-        .data(function(d) { return d.data.name.split(/(?=[A-Z][^A-Z])/g); })
+        .data(function (d) {
+            var parts = d.data.name.split(/(?=[A-Z][^A-Z])/g);
+            parts.push("£" + d3.format(".2s")(d.data.value));
+            return parts;
+        })
         .enter().append("tspan")
         .attr("x", 0)
-        .attr("y", function(d, i, nodes) { return 13 + (i - nodes.length / 2 - 0.5) * 10; })
+        .attr("y", function(d, i, nodes) { return 20 + (i - nodes.length / 2 - 0.5) * 15; })
         .text(function (d) { return d; });
     
     var tooltip = container.append("div").attr("class", "tooltip").attr("style", "display: none;");
@@ -167,7 +173,7 @@ function refreshChart() {
         .on("mouseover", function (d) {
             var pos = d3.mouse(container.node());
             tooltip
-                .html("<label>" + d.data.name + "</label><br/>Number of records: " + d.data.records + "<br/>Total grant value: " + d3.format(",.2f")(d.data.value))
+                .html("<label>" + d.data.name + "</label><br/>Number of Grants: " + d.data.records + "<br/>Total grant value: " + d3.format(",.2f")(d.data.value))
                 .style("left", (pos[0] + 20) + "px").style("top", (pos[1] - 10) + "px").style("display", "inline");
         })
         .on("mouseout", function() {
@@ -176,6 +182,38 @@ function refreshChart() {
         .on("mousemove", function() {
             var pos = d3.mouse(container.node());
             tooltip.style("left", (pos[0] + 20) + "px").style("top", (pos[1] - 10) + "px");
+        })
+        .on("click", function() {
+            var nodeMode = $("#divDisplayModes .btn.active").attr("data-id");
+            var nodeId = d3.select(this).attr("data-id");
+            
+            var nodeItems;
+            
+            if (nodeMode == "pclass") {
+                nodeItems = chartData.filter(function(d) { return d.pclass == nodeId; });
+            } else if (nodeMode == "class") {
+                nodeItems = chartData.filter(function (d) { return d.class == nodeId; });
+            } else {
+                nodeItems = chartData.filter(function (d) { return d.org == nodeId; });
+            }
+
+            nodeItems.sort(function (d1, d2) { return d2.total - d1.total; });
+
+            $("#divDialog .title").html("Top grant");
+
+            var html = "<table>";
+            html += "<thead><tr><th>Project title</th><th>Organisation name</th><th>Year of start date</th><th>Total grant value</th></tr></thead>";
+            html += "<tbody>";
+            
+            for (var i = 0; i < 5 && i < nodeItems.length; i++) {
+                html += "<tr><td>" + nodeItems[i].title + "</td><td>" + nodeItems[i].org + "</td><td>" + nodeItems[i].startY + "</td><td>" + d3.format(",.2f")(nodeItems[i].total) + "</td></tr>";
+            }
+            
+            html += "</tbody>";
+            html += "</table>";
+
+            $("#divDialog .body").html(html);
+            $("#divDialog").addClass("active");
         });
 
     node.transition().duration(1000).attr("opacity", 1);
@@ -208,7 +246,7 @@ function drawLines() {
 
         var item = { id: i, name: (d == null || d == "" ? "[empty]" : d), years: [] };
 
-        for (var j = startFrom; j <= yearTo; j++) {
+        for (var j = 2006; j <= yearTo; j++) {
             if (valueDict[d][j] != null) {
                 item.years.push({ year: j, value: valueDict[d][j], records: recordDict[d][j] });
             }
@@ -224,12 +262,10 @@ function drawLines() {
         width = $container.width() - margin.left - margin.right,
         height = $container.height() - margin.top - margin.bottom;
 
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
-
     var x = d3.scaleLinear().range([0, width]);
     var y = d3.scaleLinear().range([height, 0]);
 
-    var line = d3.line().x(function(d) { return x(d.year); }).y(function(d) { return y(d.records); });
+    var line = d3.line().x(function (d) { return x(d.year); }).y(function (d) { return y(d.value); });
 
     x.domain([
         d3.min(items, function(d) { return d3.min(d.years, function(d1) { return d1.year; }); }),
@@ -237,56 +273,75 @@ function drawLines() {
     ]);
 
     y.domain([
-        d3.min(items, function(d) { return d3.min(d.years, function(d1) { return d1.records; }); }),
-        d3.max(items, function(d) { return d3.max(d.years, function(d1) { return d1.records; }); })
+        d3.min(items, function (d) { return d3.min(d.years, function (d1) { return d1.value; }); }),
+        d3.max(items, function (d) { return d3.max(d.years, function (d1) { return d1.value; }); })
     ]);
 
     var svg = container
         .append("svg").attr("width", $container.width()).attr("height", $container.height())
         .append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    svg.append("g").attr("class", "axis axis--x").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x))
+    svg.append("g").attr("class", "axis axis--x").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x).tickFormat(d3.format("d")))
         .append("text").attr("x", margin.left + width / 2 - 40).attr("y", 40).attr("fill", "#000").text("Year of start date");
 
-    svg.append("g").attr("class", "axis axis--y").call(d3.axisLeft(y))
-        .append("text").attr("transform", "rotate(-90)").attr("y", -40).attr("fill", "#000").text("Number of records");
+    svg.append("g").attr("class", "axis axis--y").call(d3.axisLeft(y).tickFormat(d3.format(".2s")))
+        .append("text").attr("transform", "rotate(-90)").attr("y", -45).attr("fill", "#000").text("Total Grant Value");
 
     var series = svg.selectAll(".line").data(items).enter().append("g").attr("class", "line");
 
-    series.append("path").attr("d", function(d) { return line(d.years); }).style("stroke", function(d) { return color(d.name); });
+    series.append("path").attr("d", function (d) { return line(d.years); }).style("stroke", function (d) { return pclassColor(d.name); });
 
     var vertical = container.append("div").attr("class", "vertical")
         .style("height", height + "px").style("top", margin.top + "px").style("left", margin.left + "px");
     
     var tooltip = container.append("div").attr("class", "tooltip").attr("style", "display: none; width: 200px;");
+    var focus = container.append("div").attr("class", "focus").attr("style", "display: none;");
 
     container.select("svg")
-        .on("mousemove", function(d) {
-            var posx = d3.mouse(svg.node())[0];
+        .on("mousemove", function () {
+            var pos = d3.mouse(svg.node());
+            var posx = pos[0], posy = pos[1];
 
             if (posx < 0 || posx > width) {
                 vertical.style("display", "none");
                 tooltip.style("display", "none");
+                focus.style("display", "none");
                 return;
             }
 
+            if (posy < 0) posy = 0;
+            if (posy > height) posy = height;
+
             vertical.style("display", "inline").style("left", (posx + margin.left) + "px");
 
-            var year = Math.round(x.invert(posx));
-            var html = "<label>" + year + "</label>";
-
-            items.forEach(function(s) {
-                s.years.forEach(function(s1) {
+            var year = Math.round(x.invert(posx)), value = y.invert(posy);
+            var nearest = null;
+            
+            items.forEach(function (s) {
+                s.years.forEach(function (s1) {
                     if (s1.year == year) {
-                        html += "<br/><span style='color: " + color(s.name) + "'>" + s.name + ": " + s1.records + "</span>";
+                        if (nearest == null || Math.abs(nearest.year.value - value) > Math.abs(s1.value - value)) {
+                            nearest = { item: s, year: s1 };
+                        }
                     }
                 });
             });
 
-            if (width - posx < 220) {
-                tooltip.html(html).style("left", (posx + margin.left - 230) + "px").style("top", (margin.top) + "px").style("display", "inline");
-            } else {
-                tooltip.html(html).style("left", (posx + margin.left + 10) + "px").style("top", (margin.top) + "px").style("display", "inline");
+            if (nearest != null) {
+                var html = "<label style='color: " + pclassColor(nearest.item.name) + "'>" + nearest.item.name + "</label>";
+                html += "<br/><span>Year of start date: " + nearest.year.year + "</span>";
+                html += "<br/><span>Number of Grants: " + nearest.year.records + "</span>";
+                html += "<br/><span>Total grant value: " + d3.format(",.2f")(nearest.year.value) + "</span>";
+
+                var tooltipX = width - posx < 220 ? (posx + margin.left - 230) : (posx + margin.left + 10);
+                var tooltipY = (height - posy < 100 ? (height - 100) : posy) + margin.top;
+
+                tooltip.html(html).style("left", tooltipX + "px").style("top", tooltipY + "px").style("display", "inline");
+                
+                focus
+                    .style("background-color", pclassColor(nearest.item.name))
+                    .style("left", Math.round(x(nearest.year.year) + margin.left - 5) + "px").style("top", Math.round(y(nearest.year.value) + margin.top - 5) + "px")
+                    .style("display", "inline");
             }
         });
 }
@@ -333,15 +388,16 @@ $(document).ready(function () {
     });
 
     $("#divFilters ul").on("click", "a", function () {
-        $(this).closest("ul").find("li.active").removeClass("active");
-        $(this).parent().addClass("active");
-
-        refreshFilter();
+        if ($(this).parent().hasClass("active")) {
+            $(this).parent().removeClass("active");
+            refreshFilter();
+        }
         return false;
     });
 
     $("#divFilters ul").on("click", "li", function () {
-        $(this).toggleClass("active");
+        $(this).closest("ul").find("li.active").removeClass("active");
+        $(this).addClass("active");
         refreshFilter();
         return false;
     });
@@ -351,8 +407,21 @@ $(document).ready(function () {
         refreshFilter();
         return false;
     });
+    
+    $("#divDialog").click(function () {
+        $("#divDialog").removeClass("active");
+    });
 
-    d3.csv("data/PhysicsFunding.csv", function (csv) {
+    $("#divDialog .dialog-content").click(function () {
+        return false;
+    });
+
+    $("#divDialog .dialog-close").click(function () {
+        $("#divDialog").removeClass("active");
+        return false;
+    });
+
+    d3.csv("data/PhysicsFunding2.csv", function (csv) {
         data = csv;
         chartData = csv;
 
