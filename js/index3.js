@@ -85,7 +85,7 @@ function refreshChart() {
     }
 
     var items = [], valueDict = [], recordDict = [];
-    var recordMin = 1000000, recordMax = 0;
+    var recordMin = 1000000, recordMax = 0, valueMax = 0;
 
     var itemDict = mode == "pclass" ? dictPclass : mode == "class" ? dictClass : dictOrg;
 
@@ -121,6 +121,9 @@ function refreshChart() {
 
         if (records < recordMin) recordMin = records;
         if (records > recordMax) recordMax = records;
+
+        var value = valueDict[d];
+        if (value > valueMax) valueMax = value;
     });
 
     $("#divDisplayModes > div").show();
@@ -128,17 +131,20 @@ function refreshChart() {
     
     $("#spanRecords").html(recordMin + " - " + recordMax);
 
-    var r = Math.min($container.width(), $container.height());
+    var w = $container.width(), h = $container.height();
+    var r = Math.min(w, h);
 
     var color = d3.scaleLinear().domain([Math.sqrt(recordMin), Math.sqrt(recordMax)]).interpolate(d3.interpolateHslLong).range(['#007DB4', '#FFA600']);
+    var zoom = d3.zoom().scaleExtent([1, 20]).on("zoom", zoomed);
 
     var pack = d3.pack().size([r, r]).padding(1);
 
     var root = d3.hierarchy({ children: items }).sum(function(d) { return d.value; });
 
-    var svg = container.append("svg").attr("width", r).attr("height", r).attr("class", "bubble");
+    var svg = container.append("svg").attr("width", w).attr("height", h).attr("class", "bubble");
+    var view = svg.append("g");
 
-    var node = svg.selectAll(".node")
+    var node = view.selectAll(".node")
         .data(pack(root).leaves()).enter().append("g").attr("class", "node").attr("opacity", 0)
         .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
@@ -146,18 +152,20 @@ function refreshChart() {
         .append("circle")
         .attr("id", function (d) { return "node" + d.data.id; })
         .attr("r", function(d) { return d.r; })
-        .style("fill", function (d) { return color(Math.sqrt(d.data.records)); });
+        .style("fill", function (d) { return color(Math.sqrt(d.data.records)); })
+        .style("fill-opacity", function (d) { return 0.5 + (d.data.value / valueMax) * 0.5; });
 
     node.append("clipPath")
         .attr("id", function(d) { return "clip" + d.data.id; })
         .append("use")
-        .attr("xlink:href", function(d) { return "#node" + d.data.id; });
+        .attr("xlink:href", function (d) { return "#node" + d.data.id; });
 
-    node.filter(function (d) { return d.r >= 40; })
-        .append("text")
+    var text = node.append("text")
         .attr("clip-path", function(d) { return "url(#clip" + d.data.id + ")"; })
-        .selectAll("tspan")
-        .data(function (d) {
+        .attr("opacity", function(d) { return d.r >= 40 ? 1 : 0; });
+
+    var textSpan = text.selectAll("tspan")
+        .data(function(d) {
             var parts = d.data.name.split(/(?=[A-Z][^A-Z])/g);
             parts.push("£" + d3.format(".2s")(d.data.value));
             return parts;
@@ -165,8 +173,17 @@ function refreshChart() {
         .enter().append("tspan")
         .attr("x", 0)
         .attr("y", function(d, i, nodes) { return 20 + (i - nodes.length / 2 - 0.5) * 15; })
-        .text(function (d) { return d; });
-    
+        .text(function(d) { return d; });
+
+    function zoomed() {
+        view.attr("transform", d3.event.transform);
+
+        text.style("font-size", (12 / d3.event.transform.k) + "px");
+        textSpan.attr("y", function(d, i, nodes) { return (20 + (i - nodes.length / 2 - 0.5) * 15) / d3.event.transform.k; });
+
+        text.transition().attr("opacity", function(d) { return d.r * d3.event.transform.k >= 40 ? 1 : 0; });
+    }
+
     var tooltip = container.append("div").attr("class", "tooltip").attr("style", "display: none;");
 
     node
@@ -215,6 +232,9 @@ function refreshChart() {
             $("#divDialog .body").html(html);
             $("#divDialog").addClass("active");
         });
+
+    svg.call(zoom.transform, d3.zoomIdentity.translate((w - r) / 2, (h - r) / 2).scale(1));
+    svg.call(zoom);
 
     node.transition().duration(1000).attr("opacity", 1);
 }
